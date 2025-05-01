@@ -38,7 +38,7 @@ resource "null_resource" "post_install" {
     # private_key = file(var.ssh_private_key)  # Add this var
     password = var.root_password
     timeout     = "2m"
-  }
+  }  
 
   provisioner "remote-exec" {
     inline = [
@@ -48,6 +48,20 @@ resource "null_resource" "post_install" {
       "curl -sL https://containerlab.dev/setup | sudo -E bash -s \"all\""
     ]
   }
+}
+
+# Create an A record for your Linode instance
+resource "linode_domain_record" "lab43" {
+  domain_id   = data.linode_domain.my_domain.id
+  name        = "43"                            # The subdomain, e.g., www
+  record_type = "A"                              # A record for IPv4 addresses
+  target      = linode_instance.ubuntu24.ip_address
+  ttl_sec     = 60                              # Time to live in seconds
+}
+
+# Data source to reference your existing domain
+data "linode_domain" "my_domain" {
+  domain = "labs.planeta.la"  # Replace with your actual domain name
 }
 
 output "ip_address" {
